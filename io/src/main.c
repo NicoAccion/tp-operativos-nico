@@ -1,5 +1,4 @@
 #include <utils/hello.h>
-#include <string.h>
 #include <unistd.h>
 
 #define CONFIG_PATH "io.config"
