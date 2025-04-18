@@ -1,105 +1,43 @@
 #include <utils/hello.h>
-
-t_log* logger;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
 void saludar(char* quien) {
     printf("Hola desde %s!!\n", quien);
 }
 
-int iniciar_servidor(void)
-{
-	// Quitar esta línea cuando hayamos terminado de implementar la funcion
-	//assert(!"no implementado!");
+int crear_conexion(char* ip, int puerto) {
+    struct sockaddr_in direccion;
+    int socket_cliente = socket(AF_INET, SOCK_STREAM, 0);
 
-	int socket_servidor;
+    direccion.sin_family = AF_INET;
+    direccion.sin_port = htons(puerto);
+    direccion.sin_addr.s_addr = inet_addr(ip);
 
-	struct addrinfo hints, *servinfo, *p;
+    if (connect(socket_cliente, (void*)&direccion, sizeof(direccion)) != 0) {
+        return -1;
+    }
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	getaddrinfo(NULL, PUERTO, &hints, &servinfo);
-
-	// Creamos el socket de escucha del servidor
-	socket_servidor = socket(servinfo->ai_family,
-                         	 servinfo->ai_socktype,
-                         	 servinfo->ai_protocol);
-
-	// Asociamos el socket a un puerto
-	bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
-
-	// Escuchamos las conexiones entrantes
-	listen(socket_servidor, SOMAXCONN);
-
-	freeaddrinfo(servinfo);
-	log_trace(logger, "Listo para escuchar a mi cliente");
-
-	return socket_servidor;
+    return socket_cliente;
 }
 
-int esperar_cliente(int socket_servidor)
-{
-	// Quitar esta línea cuando hayamos terminado de implementar la funcion
-	//assert(!"no implementado!");
+int iniciar_servidor(char* ip, int puerto) {
+    int server_fd;
+    struct sockaddr_in direccion;
 
-	// Aceptamos un nuevo cliente
-	int socket_cliente = accept(socket_servidor, NULL, NULL);
-	log_info(logger, "Se conecto un cliente!");
+    direccion.sin_family = AF_INET;
+    direccion.sin_port = htons(puerto);
+    direccion.sin_addr.s_addr = inet_addr(ip);
 
-	return socket_cliente;
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    bind(server_fd, (void*)&direccion, sizeof(direccion));
+    listen(server_fd, 10);
+    return server_fd;
 }
 
-int recibir_operacion(int socket_cliente)
-{
-	int cod_op;
-	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
-		return cod_op;
-	else
-	{
-		close(socket_cliente);
-		return -1;
-	}
-}
-
-void* recibir_buffer(int* size, int socket_cliente)
-{
-	void * buffer;
-
-	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
-	buffer = malloc(*size);
-	recv(socket_cliente, buffer, *size, MSG_WAITALL);
-
-	return buffer;
-}
-
-void recibir_mensaje(int socket_cliente)
-{
-	int size;
-	char* buffer = recibir_buffer(&size, socket_cliente);
-	log_info(logger, "Me llego el mensaje %s", buffer);
-	free(buffer);
-}
-
-t_list* recibir_paquete(int socket_cliente)
-{
-	int size;
-	int desplazamiento = 0;
-	void * buffer;
-	t_list* valores = list_create();
-	int tamanio;
-
-	buffer = recibir_buffer(&size, socket_cliente);
-	while(desplazamiento < size)
-	{
-		memcpy(&tamanio, buffer + desplazamiento, sizeof(int));
-		desplazamiento+=sizeof(int);
-		char* valor = malloc(tamanio);
-		memcpy(valor, buffer+desplazamiento, tamanio);
-		desplazamiento+=tamanio;
-		list_add(valores, valor);
-	}
-	free(buffer);
-	return valores;
+void enviar_mensaje(int socket, char* mensaje) {
+    send(socket, mensaje, strlen(mensaje) + 1, 0);
 }

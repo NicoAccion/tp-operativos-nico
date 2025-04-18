@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <commons/log.h>
+#include <commons/config.h>
 
 /**
 * @brief Imprime un saludo por consola
@@ -11,5 +12,8 @@
 * @return No devuelve nada
 */
 void saludar(char* quien);
+int crear_conexion(char* ip, int puerto);
+void enviar_mensaje(int socket, char* mensaje);
+int iniciar_servidor(char* ip, int puerto);
 
 #endif
