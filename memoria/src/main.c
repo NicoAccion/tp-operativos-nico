@@ -56,12 +56,12 @@ int main() {
 	int opt = 1;
 	setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	if (bind(socket_servidor, (void*)&direccion, sizeof(direccion)) < 0) {
-    log_error(logger, "Fallo bind()");
-    return EXIT_FAILURE;
+        log_error(logger, "Fallo bind()");
+        return EXIT_FAILURE;
 	}
     if (listen(socket_servidor, 10) < 0) {
-    log_error(logger, "Fallo listen()");
-    return EXIT_FAILURE;
+        log_error(logger, "Fallo listen()");
+        return EXIT_FAILURE;
 	}
 
     log_info(logger, "Servidor Memoria escuchando en puerto %d", puerto);

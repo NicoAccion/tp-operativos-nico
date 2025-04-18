@@ -22,7 +22,8 @@ void* escuchar_conexiones_cpu_io(void* arg) {
         int socket_cliente = accept(socket_servidor, (void*)&cliente, &tam);
         char buffer[100] = {0};
         recv(socket_cliente, buffer, sizeof(buffer), 0);
-        saludar(buffer); // Muestra "Hola desde CPU-1!!" o similar
+        saludar(buffer); // Muestra "Hola desde CPU-1!!" 
+        log_info(logger, "Recibido nuevo: %s", buffer);
         close(socket_cliente);
     }
     return NULL;
@@ -32,7 +33,6 @@ int main() {
     logger = log_create("kernel.log", "KERNEL", 1, LOG_LEVEL_INFO);
     config = config_create(CONFIG_PATH);
 
-    // 1. Conectarse a Memoria
     char* ip_memoria = config_get_string_value(config, "IP_MEMORIA");
     int puerto_memoria = config_get_int_value(config, "PUERTO_MEMORIA");
 
@@ -47,9 +47,8 @@ int main() {
     enviar_mensaje(socket_memoria, "KERNEL");
     sleep(1);
     log_info(logger, "Mensaje enviado a Memoria");
-    
 
-    // 2. Escuchar conexiones de CPU / IO (puerto de dispatch)
+    
     int* puerto_dispatch = malloc(sizeof(int));
     *puerto_dispatch = config_get_int_value(config, "PUERTO_ESCUCHA_DISPATCH");
 
@@ -57,7 +56,6 @@ int main() {
     pthread_create(&hilo_escucha, NULL, escuchar_conexiones_cpu_io, puerto_dispatch);
     pthread_detach(hilo_escucha);
 
-    // 3. Esperar para siempre
-    pause(); // pausa el hilo principal y deja correr los otros
+    pause();
     return 0;
 }

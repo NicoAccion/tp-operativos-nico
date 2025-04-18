@@ -53,7 +53,6 @@ int main(int argc, char* argv[]) {
         close(socket_memoria);
     }
 
-
     close(socket_kernel);
     config_destroy(config);
     log_destroy(logger);
@@ -78,4 +77,3 @@ int crear_conexion(char* ip, int puerto) {
 void enviar_mensaje(int socket, char* mensaje) {
     send(socket, mensaje, strlen(mensaje) + 1, 0); // +1 para incluir el '\0'
 }
-
