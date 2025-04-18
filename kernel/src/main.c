@@ -1,12 +1,8 @@
 #include <utils/hello.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <arpa/inet.h>
-#include <commons/log.h>
-#include <commons/config.h>
 
 #define CONFIG_PATH "kernel.config"
 

@@ -27,7 +27,6 @@ void* manejar_cliente(void* socket_cliente_ptr) {
         saludar(buffer);
 
         // También lo logueamos con commons
-		printf("LLEGA");
         log_info(logger, "Recibido nuevo: %s", buffer);
     } else {
         log_warning(logger, "Cliente desconectado sin enviar mensaje.");
@@ -67,17 +66,12 @@ int main() {
 	}
 
     log_info(logger, "Servidor Memoria escuchando en puerto %d", puerto);
-	
-	printf("LLEGA2\n");
 
 	while (1) {
-		printf("LLEGA3\n");
     	struct sockaddr_in cliente;
     	socklen_t tam = sizeof(cliente);
     	int* socket_cliente = malloc(sizeof(int));
-		printf("LLEGA4\n");
     	*socket_cliente = accept(socket_servidor, (void*)&cliente, &tam);
-		printf("LLEGA5\n");
 
     	pthread_t hilo_cliente;
     	pthread_create(&hilo_cliente, NULL, manejar_cliente, socket_cliente);

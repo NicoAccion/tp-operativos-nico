@@ -1,5 +1,4 @@
 #include <utils/hello.h>
-#include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
@@ -35,7 +34,25 @@ int main(int argc, char* argv[]) {
     snprintf(mensaje, MENSAJE_MAX_LEN, "CPU-%s", id_cpu);
     enviar_mensaje(socket_kernel, mensaje);
 
-    log_info(logger, "Mensaje enviado: %s", mensaje);
+    log_info(logger, "Mensaje enviado a kernel: %s", mensaje);
+
+    char* ip_memoria = config_get_string_value(config, "IP_MEMORIA");
+    int puerto_memoria = config_get_int_value(config, "PUERTO_MEMORIA");
+
+    log_info(logger, "CPU %s conectando a Memoria en %s:%d...", id_cpu, ip_memoria, puerto_memoria);
+
+    int socket_memoria = crear_conexion(ip_memoria, puerto_memoria);
+    if (socket_memoria == -1) {
+        log_error(logger, "Error al conectar a Memoria");
+    } else {
+        char mensaje_memoria[100];
+        snprintf(mensaje_memoria, sizeof(mensaje_memoria), "CPU-%s", id_cpu);
+        enviar_mensaje(socket_memoria, mensaje_memoria);
+        log_info(logger, "Mensaje enviado a Memoria: %s", mensaje_memoria);
+        sleep(1); // para asegurar que el mensaje llegue antes de cerrar
+        close(socket_memoria);
+    }
+
 
     close(socket_kernel);
     config_destroy(config);
@@ -61,3 +78,4 @@ int crear_conexion(char* ip, int puerto) {
 void enviar_mensaje(int socket, char* mensaje) {
     send(socket, mensaje, strlen(mensaje) + 1, 0); // +1 para incluir el '\0'
 }
+
