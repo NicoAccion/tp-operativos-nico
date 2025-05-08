@@ -1,38 +1,28 @@
 #include <utils/hello.h>
-#include <unistd.h>
-
-#define CONFIG_PATH "io.config"
+#include <utils/configs.h>
+#include "io-conexiones.h"
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Uso: %s <nombre_dispositivo>\n", argv[0]);
-        return 1;
-    }
+    char* ip_kernel;
+    int puerto_kernel;
+    char* log_level;
 
-    char* nombre_io = argv[1];
-    t_log* logger = log_create("io.log", "IO", 1, LOG_LEVEL_INFO);
-    t_config* config = config_create(CONFIG_PATH);
+    t_config* config_de_io;
 
-    char* ip_kernel = config_get_string_value(config, "IP_KERNEL");
-    int puerto_kernel = config_get_int_value(config, "PUERTO_KERNEL");
+    saludar("io");
 
-    log_info(logger, "Dispositivo IO '%s' conectando al Kernel (%s:%d)...", nombre_io, ip_kernel, puerto_kernel);
+    //Creo un nuevo config
+    config_de_io = iniciar_config("io.config");
 
-    int socket_kernel = crear_conexion(ip_kernel, puerto_kernel);
-    if (socket_kernel == -1) {
-        log_error(logger, "No se pudo conectar al Kernel");
-        return 2;
-    }
+    //Dejo los valores leidos por el config en las variables
+    ip_kernel = config_get_string_value(config_de_io, "IP_KERNEL");
+    puerto_kernel = config_get_int_value(config_de_io, "PUERTO_KERNEL");
+    log_level = config_get_string_value(config_de_io, "LOG_LEVEL");
 
-    // Formatear el mensaje como "IO-Disco", "IO-Teclado", etc.
-    char mensaje[100];
-    snprintf(mensaje, sizeof(mensaje), "IO-%s", nombre_io);
-    enviar_mensaje(socket_kernel, mensaje);
+    io_conectar_a_kernel();
 
-    log_info(logger, "Mensaje enviado al Kernel: %s", mensaje);
+    //Destruyo el config
+    config_destroy(config_de_io);
 
-    close(socket_kernel);
-    config_destroy(config);
-    log_destroy(logger);
     return 0;
 }
